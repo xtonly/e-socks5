@@ -1,14 +1,13 @@
-
 #!/bin/bash
 
 # =================================================================
 # Debian/Ubuntu 一键安装 Dante SOCKS5 代理脚本
-# (带用户名和密码认证)
+# (高位端口 58998, 用户名 'guest', 带密码认证)
 # =================================================================
 
-# 0. 定义变量
-DANTE_PORT="1080"
-PROXY_USER="proxyuser"
+# 0. 定义变量 (已按您的要求修改)
+DANTE_PORT="58998"
+PROXY_USER="guest"
 # 生成一个 16 位的随机密码
 PROXY_PASS=$(head /dev/urandom | tr -dc 'A-Za-z0-9' | head -c 16)
 
@@ -70,7 +69,7 @@ cat > $DANTE_CONFIG << EOF
 # 日志设置
 logoutput: /var/log/danted.log
 
-# 监听的 IP 和 端口
+# 监听的 IP 和 端口 (已修改为 58998)
 internal: $LISTEN_ON port = $DANTE_PORT
 
 # 绑定的出口 IP (使用与 internal 相同的接口)
