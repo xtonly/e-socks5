@@ -2,14 +2,18 @@
 
 # =================================================================
 # Debian/Ubuntu 一键安装 Dante SOCKS5 代理脚本
-# (高位端口 58998, 用户名 'guest', 带密码认证)
+# (高位端口 58998, 8位随机用户名, 12位强密码)
 # =================================================================
 
 # 0. 定义变量 (已按您的要求修改)
 DANTE_PORT="58998"
-PROXY_USER="guest"
-# 生成一个 16 位的随机密码
-PROXY_PASS=$(head /dev/urandom | tr -dc 'A-Za-z0-9' | head -c 16)
+
+# 生成 8 位随机用户名 (大小写字母+数字)
+PROXY_USER=$(head /dev/urandom | tr -dc 'A-Za-z0-9' | head -c 8)
+
+# 生成 12 位随机强密码 (大小写字母+数字+符号)
+# 使用一组安全的符号: !@#%
+PROXY_PASS=$(head /dev/urandom | tr -dc 'A-Za-z0-9!@#%' | head -c 12)
 
 # 确保以 root 权限运行
 if [ "$(id -u)" -ne 0 ]; then
@@ -18,6 +22,8 @@ if [ "$(id -u)" -ne 0 ]; then
 fi
 
 echo "正在开始安装和配置 Dante SOCKS5 代理..."
+echo "端口: $DANTE_PORT"
+echo "即将生成随机用户名和密码..."
 
 # 1. 更新并安装 Dante 服务器和依赖
 apt update
@@ -37,11 +43,15 @@ if ! id "$PROXY_USER" &>/dev/null; then
     useradd -r -s /usr/sbin/nologin $PROXY_USER
     echo "创建代理认证用户 '$PROXY_USER' 完成。"
 else
-    echo "代理认证用户 '$PROXY_USER' 已存在。"
+    echo "代理认证用户 '$PROXY_USER' 已存在。正在更新其密码..."
 fi
 
 # 为该用户设置密码
 echo "$PROXY_USER:$PROXY_PASS" | chpasswd
+if [ $? -ne 0 ]; then
+    echo "错误：设置密码失败！请检查 chpasswd 是否正常工作。"
+    exit 1
+fi
 echo "为 '$PROXY_USER' 设置随机密码完成。"
 
 # 4. 备份并创建 dante 配置文件
